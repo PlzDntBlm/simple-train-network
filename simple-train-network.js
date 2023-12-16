@@ -10,8 +10,14 @@ class Track {
     constructor(startStation, endStation) {
         this.startStation = startStation;
         this.endStation = endStation;
+        this.status = 'operational'; // Default status
+    }
+
+    setStatus(newStatus) {
+        this.status = newStatus;
     }
 }
+
 
 class TrainNetwork {
     constructor() {
@@ -35,6 +41,17 @@ class TrainNetwork {
         this.tracks.push(new Track(this.stations[endName], this.stations[startName]));
     }
 
+    setTrackStatus(startName, endName, status) {
+        const track = this.tracks.find(track =>
+            track.startStation.name === startName && track.endStation.name === endName);
+
+        if (track) {
+            track.setStatus(status);
+        } else {
+            throw new Error("Track does not exist");
+        }
+    }
+
     visualize(containerId) {
         const svg = d3.select(`#${containerId}`).append('svg')
             .attr('width', 600)
@@ -55,8 +72,9 @@ class TrainNetwork {
                 y2: track.endStation.y + offsetY
             };
         }
-        
+
         // Draw Tracks with offset to visualize separate tracks
+        // Draw Tracks with status-based styling
         svg.selectAll('.track')
             .data(this.tracks)
             .enter()
@@ -66,7 +84,7 @@ class TrainNetwork {
             .attr('y1', d => offsetLine(d, 3).y1)
             .attr('x2', d => offsetLine(d, 3).x2)
             .attr('y2', d => offsetLine(d, 3).y2)
-            .attr('stroke', 'black');
+            .attr('stroke', d => d.status === 'operational' ? 'black' : 'red'); // Example: red for non-operational tracks
 
         // Draw Stations
         svg.selectAll('.station')
@@ -106,6 +124,9 @@ network.connectStations("Central", "East Junction");
 network.connectStations("Central", "West End");
 network.connectStations("North Park", "East Junction");
 network.connectStations("South Plaza", "West End");
+
+// Set track status
+network.setTrackStatus("Central", "North Park", "under repair");
 
 // Visualize the network
 network.visualize('network');
