@@ -2,6 +2,11 @@ class Station {
     constructor(name) {
         this.name = name;
     }
+
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
 }
 
 class Track {
@@ -41,25 +46,32 @@ class TrainNetwork {
     listTracks() {
         return this.tracks.map(track => `${track.startStation.name} to ${track.endStation.name}`);
     }
+
+    visualize(containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = ''; // Clear previous visualization
+
+        // Visualize Stations
+        for (const key in this.stations) {
+            const station = this.stations[key];
+            const stationDiv = document.createElement('div');
+            stationDiv.className = 'station';
+            stationDiv.style.left = `${station.x}px`;
+            stationDiv.style.top = `${station.y}px`;
+            stationDiv.title = station.name;
+            container.appendChild(stationDiv);
+        }
+
+        // Visualize Tracks
+        // Additional logic needed to calculate line positions and angles
+    }
 }
 
-// Create a new Train Network
+// Create network and stations
 const network = new TrainNetwork();
+network.addStation("Central").setPosition(300, 200);
+network.addStation("North Park").setPosition(300, 100);
+// ... add other stations and set positions ...
 
-// Add Stations
-network.addStation("Central");
-network.addStation("North Park");
-network.addStation("South Plaza");
-network.addStation("East Junction");
-network.addStation("West End");
-
-// Connect Stations
-network.connectStations("Central", "North Park");
-network.connectStations("Central", "South Plaza");
-network.connectStations("Central", "East Junction");
-network.connectStations("Central", "West End");
-network.connectStations("North Park", "East Junction");
-network.connectStations("South Plaza", "West End");
-
-console.log(network.listTracks());
-
+// Visualize the network
+network.visualize('network');
