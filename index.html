@@ -13,27 +13,23 @@
         }
 
         .station {
-            width: 10px;
-            height: 10px;
-            background-color: blue;
-            position: absolute;
-            border-radius: 50%;
-            text-align: center;
-            color: white;
-            font-size: 10px;
-            line-height: 10px;
+            fill: blue;
+            stroke: black;
+            stroke-width: 1px;
         }
 
         .track {
-            position: absolute;
-            background-color: grey;
-            z-index: -1;
+            stroke: grey;
+            stroke-width: 2px;
         }
+
 
     </style>
 </head>
 <body>
 <div id="network"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="simple-train-network.js"></script>
 </body>
 </html>

@@ -1,9 +1,6 @@
 class Station {
-    constructor(name) {
+    constructor(name, x, y) {
         this.name = name;
-    }
-
-    setPosition(x, y) {
         this.x = x;
         this.y = y;
     }
@@ -22,8 +19,8 @@ class TrainNetwork {
         this.tracks = [];
     }
 
-    addStation(name) {
-        const station = new Station(name);
+    addStation(name, x, y) {
+        const station = new Station(name, x, y);
         this.stations[name] = station;
         return station;
     }
@@ -33,45 +30,66 @@ class TrainNetwork {
             throw new Error("Station does not exist");
         }
 
-        // Add track from start to end
-        let track = new Track(this.stations[startName], this.stations[endName]);
-        this.tracks.push(track);
-
-        // Add reverse track from end to start
-        track = new Track(this.stations[endName], this.stations[startName]);
-        this.tracks.push(track);
-    }
-
-    // A simple method to list all tracks for visualization
-    listTracks() {
-        return this.tracks.map(track => `${track.startStation.name} to ${track.endStation.name}`);
+        // Bidirectional tracks
+        this.tracks.push(new Track(this.stations[startName], this.stations[endName]));
+        this.tracks.push(new Track(this.stations[endName], this.stations[startName]));
     }
 
     visualize(containerId) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = ''; // Clear previous visualization
+        const svg = d3.select(`#${containerId}`).append('svg')
+            .attr('width', 600)
+            .attr('height', 400);
 
-        // Visualize Stations
-        for (const key in this.stations) {
-            const station = this.stations[key];
-            const stationDiv = document.createElement('div');
-            stationDiv.className = 'station';
-            stationDiv.style.left = `${station.x}px`;
-            stationDiv.style.top = `${station.y}px`;
-            stationDiv.title = station.name;
-            container.appendChild(stationDiv);
-        }
+        // Draw Tracks
+        svg.selectAll('.track')
+            .data(this.tracks)
+            .enter()
+            .append('line')
+            .attr('class', 'track')
+            .attr('x1', d => d.startStation.x)
+            .attr('y1', d => d.startStation.y)
+            .attr('x2', d => d.endStation.x)
+            .attr('y2', d => d.endStation.y)
+            .attr('stroke', 'black');
 
-        // Visualize Tracks
-        // Additional logic needed to calculate line positions and angles
+        // Draw Stations
+        svg.selectAll('.station')
+            .data(Object.values(this.stations))
+            .enter()
+            .append('circle')
+            .attr('class', 'station')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', 5)
+            .attr('fill', 'blue');
+
+        // Add Labels
+        svg.selectAll('.label')
+            .data(Object.values(this.stations))
+            .enter()
+            .append('text')
+            .attr('x', d => d.x + 10)
+            .attr('y', d => d.y + 5)
+            .text(d => d.name)
+            .attr('font-size', '10px');
     }
 }
 
 // Create network and stations
 const network = new TrainNetwork();
-network.addStation("Central").setPosition(300, 200);
-network.addStation("North Park").setPosition(300, 100);
-// ... add other stations and set positions ...
+network.addStation("Central", 300, 200);
+network.addStation("North Park", 300, 100);
+network.addStation("South Plaza", 300, 300);
+network.addStation("East Junction", 400, 200);
+network.addStation("West End", 200, 200);
+
+// Connect Stations
+network.connectStations("Central", "North Park");
+network.connectStations("Central", "South Plaza");
+network.connectStations("Central", "East Junction");
+network.connectStations("Central", "West End");
+network.connectStations("North Park", "East Junction");
+network.connectStations("South Plaza", "West End");
 
 // Visualize the network
 network.visualize('network');
