@@ -40,16 +40,32 @@ class TrainNetwork {
             .attr('width', 600)
             .attr('height', 400);
 
-        // Draw Tracks
+        // Function to slightly offset the tracks for visualization
+        function offsetLine(track, offset) {
+            const dx = track.endStation.x - track.startStation.x;
+            const dy = track.endStation.y - track.startStation.y;
+            const normal = Math.sqrt(dx * dx + dy * dy);
+            const offsetX = offset * (dy / normal);
+            const offsetY = offset * (-dx / normal);
+
+            return {
+                x1: track.startStation.x + offsetX,
+                y1: track.startStation.y + offsetY,
+                x2: track.endStation.x + offsetX,
+                y2: track.endStation.y + offsetY
+            };
+        }
+        
+        // Draw Tracks with offset to visualize separate tracks
         svg.selectAll('.track')
             .data(this.tracks)
             .enter()
             .append('line')
             .attr('class', 'track')
-            .attr('x1', d => d.startStation.x)
-            .attr('y1', d => d.startStation.y)
-            .attr('x2', d => d.endStation.x)
-            .attr('y2', d => d.endStation.y)
+            .attr('x1', d => offsetLine(d, 3).x1)
+            .attr('y1', d => offsetLine(d, 3).y1)
+            .attr('x2', d => offsetLine(d, 3).x2)
+            .attr('y2', d => offsetLine(d, 3).y2)
             .attr('stroke', 'black');
 
         // Draw Stations
