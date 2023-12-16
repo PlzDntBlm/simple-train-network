@@ -10,11 +10,17 @@ class Track {
     constructor(startStation, endStation) {
         this.startStation = startStation;
         this.endStation = endStation;
-        this.status = 'operational'; // Default status
+        this.status = 'operational'; // operational, underMaintenance, outOfService
+        this.isBidirectional = false;
     }
 
     setStatus(newStatus) {
         this.status = newStatus;
+    }
+
+    setBidirectional(isBidirectional) {
+        this.isBidirectional = isBidirectional;
+        // If there's a corresponding reverse track, you might also want to update its bidirectionality
     }
 }
 
@@ -39,6 +45,20 @@ class TrainNetwork {
         // Bidirectional tracks
         this.tracks.push(new Track(this.stations[startName], this.stations[endName]));
         this.tracks.push(new Track(this.stations[endName], this.stations[startName]));
+    }
+
+    // Method to connect two stations with a unidirectional track
+    connectOneWay(startName, endName) {
+        if (!this.stations[startName] || !this.stations[endName]) {
+            throw new Error("Station does not exist");
+        }
+        this.tracks.push(new Track(this.stations[startName], this.stations[endName]));
+    }
+
+    // Method to connect two stations with bidirectional tracks
+    connectBothWays(startName, endName) {
+        this.connectOneWay(startName, endName);
+        this.connectOneWay(endName, startName);
     }
 
     setTrackStatus(startName, endName, status) {
@@ -120,6 +140,23 @@ class TrainNetwork {
             .text(d => d.name)
             .attr('font-size', '10px');
     }
+
+    updateTrackStatus(startName, endName, status, isBidirectional) {
+        const track = this.findTrack(startName, endName);
+        if (track) {
+            track.setStatus(status);
+            track.setBidirectional(isBidirectional);
+        } else {
+            throw new Error("Track does not exist");
+        }
+
+        // Additional logic for corresponding reverse track, if necessary
+    }
+
+    findTrack(startName, endName) {
+        return this.tracks.find(track =>
+            track.startStation.name === startName && track.endStation.name === endName);
+    }
 }
 
 // Create network and stations
@@ -131,15 +168,18 @@ network.addStation("East Junction", 400, 200);
 network.addStation("West End", 200, 200);
 
 // Connect Stations
-network.connectStations("Central", "North Park");
-network.connectStations("Central", "South Plaza");
-network.connectStations("Central", "East Junction");
-network.connectStations("Central", "West End");
-network.connectStations("North Park", "East Junction");
-network.connectStations("South Plaza", "West End");
+network.connectBothWays("Central", "North Park");
+network.connectBothWays("Central", "South Plaza");
+network.connectBothWays("Central", "East Junction");
+network.connectBothWays("Central", "West End");
+network.connectBothWays("North Park", "East Junction");
+network.connectOneWay("South Plaza", "West End");
 
 // Set track status
 network.setTrackStatus("Central", "North Park", "under repair");
+
+network.updateTrackStatus("Central", "East Junction", "underMaintenance", false);
+
 
 // Visualize the network
 network.visualize('network');
