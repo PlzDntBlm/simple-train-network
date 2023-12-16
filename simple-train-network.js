@@ -57,8 +57,22 @@ class TrainNetwork {
             .attr('width', 600)
             .attr('height', 400);
 
+        // Function to determine if reverse track exists
+        const hasReverseTrack = (track) => {
+            return this.tracks.some(t =>
+                t.startStation.name === track.endStation.name &&
+                t.endStation.name === track.startStation.name);
+        };
+
         // Function to slightly offset the tracks for visualization
-        function offsetLine(track, offset) {
+        function offsetLine(track, offset, hasReverse) {
+            if (!hasReverse) return {
+                x1: track.startStation.x,
+                y1: track.startStation.y,
+                x2: track.endStation.x,
+                y2: track.endStation.y
+            };
+
             const dx = track.endStation.x - track.startStation.x;
             const dy = track.endStation.y - track.startStation.y;
             const normal = Math.sqrt(dx * dx + dy * dy);
@@ -73,18 +87,17 @@ class TrainNetwork {
             };
         }
 
-        // Draw Tracks with offset to visualize separate tracks
-        // Draw Tracks with status-based styling
+        // Draw Tracks with or without offset
         svg.selectAll('.track')
             .data(this.tracks)
             .enter()
             .append('line')
             .attr('class', 'track')
-            .attr('x1', d => offsetLine(d, 3).x1)
-            .attr('y1', d => offsetLine(d, 3).y1)
-            .attr('x2', d => offsetLine(d, 3).x2)
-            .attr('y2', d => offsetLine(d, 3).y2)
-            .attr('stroke', d => d.status === 'operational' ? 'black' : 'red'); // Example: red for non-operational tracks
+            .attr('x1', d => offsetLine(d, 3, hasReverseTrack(d)).x1)
+            .attr('y1', d => offsetLine(d, 3, hasReverseTrack(d)).y1)
+            .attr('x2', d => offsetLine(d, 3, hasReverseTrack(d)).x2)
+            .attr('y2', d => offsetLine(d, 3, hasReverseTrack(d)).y2)
+            .attr('stroke', d => d.status === 'operational' ? 'black' : 'red');
 
         // Draw Stations
         svg.selectAll('.station')
