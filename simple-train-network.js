@@ -77,6 +77,8 @@ class TrainNetwork {
             .attr('width', 600)
             .attr('height', 400);
 
+        const tooltip = d3.select("#tooltip");
+
         // Function to determine if reverse track exists
         const hasReverseTrack = (track) => {
             return this.tracks.some(t =>
@@ -117,7 +119,16 @@ class TrainNetwork {
             .attr('y1', d => offsetLine(d, 3, hasReverseTrack(d)).y1)
             .attr('x2', d => offsetLine(d, 3, hasReverseTrack(d)).x2)
             .attr('y2', d => offsetLine(d, 3, hasReverseTrack(d)).y2)
-            .attr('stroke', d => d.status === 'operational' ? 'black' : 'red');
+            .attr('stroke', d => d.status === 'operational' ? 'black' : 'red')
+            .on("mouseover", function (event, d) {
+                tooltip.style("display", "inline");
+                tooltip.html(`Track: ${d.startStation.name} to ${d.endStation.name}<br>Status: ${d.status}<br>Is used: ${d.isBidirectional ? "in both directions" : "in set direction"}`)
+                    .style("left", (event.pageX + 5) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function () {
+                tooltip.style("display", "none");
+            });
 
         // Draw Stations
         svg.selectAll('.station')
@@ -178,7 +189,7 @@ network.connectOneWay("South Plaza", "West End");
 // Set track status
 network.setTrackStatus("Central", "North Park", "under repair");
 
-network.updateTrackStatus("Central", "East Junction", "underMaintenance", false);
+network.updateTrackStatus("Central", "East Junction", "underMaintenance", true);
 
 
 // Visualize the network
